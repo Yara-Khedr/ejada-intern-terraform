@@ -20,6 +20,7 @@ resource "oci_core_route_table" "YaraRT_Pub01" {
     compartment_id = var.compartment_id
     vcn_id = oci_core_vcn.YaraVCN01.id
     display_name = "YaraRT-Pub01" 
+
     route_rules {
         
         network_entity_id = oci_core_internet_gateway.YaraIGW01.id
