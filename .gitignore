@@ -1,9 +1,7 @@
-# Terraform
 .terraform/
 *.tfstate
 *.tfstate.backup
 crash.log
 
-# Never commit credentials
 *.pem
 .oci/
