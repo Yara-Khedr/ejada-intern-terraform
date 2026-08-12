@@ -209,3 +209,22 @@ resource "oci_core_instance" "YaraVM02" {
   }
 
 }
+
+resource "oci_file_storage_file_system" "YaraFS02" {
+  compartment_id      = var.compartment_id
+  availability_domain = local.availability_domain_name
+  display_name        = "YaraFS02"
+}
+
+resource "oci_file_storage_mount_target" "YaraMT02" {
+  compartment_id      = var.compartment_id
+  availability_domain = local.availability_domain_name
+  subnet_id           = oci_core_subnet.YaraSubnet_Priv02.id
+  display_name        = "YaraMT02"
+}
+
+resource "oci_file_storage_export" "YaraExport02" {
+  export_set_id  = oci_file_storage_mount_target.YaraMT02.export_set_id
+  file_system_id = oci_file_storage_file_system.YaraFS02.id
+  path           = "/YaraFS02"
+}
