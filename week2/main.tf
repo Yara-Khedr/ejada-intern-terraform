@@ -181,3 +181,31 @@ resource "oci_core_security_list" "YaraSL_Priv02" {
     destination = "0.0.0.0/0"
   }
 }
+
+resource "oci_core_instance" "YaraVM02" {
+
+  availability_domain = local.availability_domain_name
+  compartment_id      = var.compartment_id
+  display_name        = "YaraVM02"
+  shape               = var.instance_shape
+
+  shape_config {
+    ocpus         = var.instance_ocpus
+    memory_in_gbs = var.instance_memory_gbs
+  }
+
+  source_details {
+    source_type = "image"
+    source_id   = data.oci_core_images.image.images[0].id
+  }
+
+  create_vnic_details {
+    subnet_id        = oci_core_subnet.YaraSubnet_Priv02.id
+    assign_public_ip = false
+  }
+
+  metadata = {
+    ssh_authorized_keys = file(var.ssh_public_key_path)
+  }
+
+}
