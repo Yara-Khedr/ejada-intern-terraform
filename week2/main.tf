@@ -98,6 +98,15 @@ resource "oci_core_security_list" "YaraSL_Pub02" {
     protocol = "6"
     source   = var.allowed_ingress_cidr
     tcp_options {
+      min = 22
+      max = 22
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.allowed_ingress_cidr
+    tcp_options {
       min = 80
       max = 80
     }
@@ -137,6 +146,15 @@ resource "oci_core_security_list" "YaraSL_Priv02" {
     tcp_options {
       min = 22
       max = 22
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.vcn_cidr
+    tcp_options {
+      min = 80
+      max = 80
     }
   }
 
@@ -215,6 +233,32 @@ resource "oci_core_instance" "YaraVM02" {
 
 }
 
+resource "oci_core_instance" "YaraJumpVM02" {
+  availability_domain = local.availability_domain_name
+  compartment_id      = var.compartment_id
+  display_name        = "YaraJumpVM02"
+  shape               = var.instance_shape
+
+  shape_config {
+    ocpus         = 1
+    memory_in_gbs = 6
+  }
+
+  source_details {
+    source_type = "image"
+    source_id   = data.oci_core_images.image.images[0].id
+  }
+
+  create_vnic_details {
+    subnet_id        = oci_core_subnet.YaraSubnet_Pub02.id
+    assign_public_ip = true
+  }
+
+  metadata = {
+    ssh_authorized_keys = file(var.ssh_public_key_path)
+  }
+}
+
 resource "oci_file_storage_file_system" "YaraFS02" {
   compartment_id      = var.compartment_id
   availability_domain = local.availability_domain_name
@@ -241,3 +285,43 @@ resource "oci_file_storage_export" "YaraExport02" {
   client_cidr_block_allow_list = [var.bastion_allowed_cidr]
   name                         = "YaraBastion02"
 }*/
+
+resource "oci_load_balancer_load_balancer" "YaraLB02" {
+  compartment_id = var.compartment_id
+  display_name   = "YaraLB02"
+  shape          = "flexible"
+  subnet_ids     = [oci_core_subnet.YaraSubnet_Pub02.id]
+  is_private     = false
+
+  shape_details {
+    minimum_bandwidth_in_mbps = 10
+    maximum_bandwidth_in_mbps = 100
+  }
+}
+
+resource "oci_load_balancer_backend_set" "YaraBES02" {
+  name             = "YaraBES02"
+  load_balancer_id = oci_load_balancer_load_balancer.YaraLB02.id
+  policy           = "ROUND_ROBIN"
+
+  health_checker {
+    protocol = "HTTP"
+    port     = 80
+    url_path = "/"
+  }
+}
+
+resource "oci_load_balancer_backend" "YaraBackend02" {
+  backendset_name  = oci_load_balancer_backend_set.YaraBES02.name
+  load_balancer_id = oci_load_balancer_load_balancer.YaraLB02.id
+  ip_address       = oci_core_instance.YaraVM02.private_ip
+  port             = 80
+}
+
+resource "oci_load_balancer_listener" "YaraListener02" {
+  load_balancer_id         = oci_load_balancer_load_balancer.YaraLB02.id
+  name                     = "YaraListener02"
+  default_backend_set_name = oci_load_balancer_backend_set.YaraBES02.name
+  port                     = 80
+  protocol                 = "HTTP"
+}
