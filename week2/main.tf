@@ -1,7 +1,7 @@
 resource "oci_core_vcn" "YaraVCN02" {
 
   compartment_id = var.compartment_id
-  cidr_blocks    = ["10.0.0.0/16"]
+  cidr_blocks    = [var.vcn_cidr]
   display_name   = "YaraVCN02"
 
 }
@@ -14,6 +14,7 @@ resource "oci_core_subnet" "YaraSubnet_Pub02" {
   display_name               = "YaraSubnet_Pub02"
   prohibit_public_ip_on_vnic = false
   route_table_id             = oci_core_route_table.YaraRT_Pub02.id
+  security_list_ids          = [oci_core_security_list.YaraSL_Pub02.id]
 }
 
 resource "oci_core_subnet" "YaraSubnet_Priv02" {
@@ -24,6 +25,7 @@ resource "oci_core_subnet" "YaraSubnet_Priv02" {
   display_name               = "YaraSubnet_Priv02"
   prohibit_public_ip_on_vnic = true
   route_table_id             = oci_core_route_table.YaraRT_Priv02.id
+  security_list_ids          = [oci_core_security_list.YaraSL_Priv02.id]
 }
 
 resource "oci_core_internet_gateway" "YaraIGW02" {
@@ -84,5 +86,98 @@ resource "oci_core_route_table" "YaraRT_Priv02" {
     destination       = local.all_Services_cidr
     destination_type  = "SERVICE_CIDR_BLOCK"
     network_entity_id = oci_core_service_gateway.YaraServiceGW02.id
+  }
+}
+
+resource "oci_core_security_list" "YaraSL_Pub02" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.YaraVCN02.id
+  display_name   = "YaraSL_Pub02"
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.allowed_ingress_cidr
+    tcp_options {
+      min = 80
+      max = 80
+    }
+  }
+
+  ingress_security_rules {
+
+    protocol = "6"
+    source   = var.allowed_ingress_cidr
+
+    tcp_options {
+
+      min = 443
+      max = 443
+
+    }
+
+  }
+
+  egress_security_rules {
+
+    protocol    = "all"
+    destination = "0.0.0.0/0"
+
+  }
+
+}
+
+resource "oci_core_security_list" "YaraSL_Priv02" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.YaraVCN02.id
+  display_name   = "YaraSL_Priv02"
+
+  ingress_security_rules {
+    protocol = "6"
+    source   = var.vcn_cidr
+    tcp_options {
+      min = 22
+      max = 22
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "6"
+    destination = var.vcn_cidr
+    tcp_options {
+      min = 111
+      max = 111
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "6"
+    destination = var.vcn_cidr
+    tcp_options {
+      min = 2048
+      max = 2050
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "17"
+    destination = var.vcn_cidr
+    udp_options {
+      min = 111
+      max = 111
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "17"
+    destination = var.vcn_cidr
+    udp_options {
+      min = 2048
+      max = 2048
+    }
+  }
+
+  egress_security_rules {
+    protocol    = "all"
+    destination = "0.0.0.0/0"
   }
 }
