@@ -37,3 +37,8 @@ variable "ssh_public_key_path" {
   type        = string
   description = "Local file path to the SSH public key used to access the private instance"
 }
+
+variable "bastion_allowed_cidr" {
+  type        = string
+  description = "CIDR range allowed to initiate Bastion sessions"
+}

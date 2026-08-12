@@ -206,6 +206,11 @@ resource "oci_core_instance" "YaraVM02" {
 
   metadata = {
     ssh_authorized_keys = file(var.ssh_public_key_path)
+
+    user_data = base64encode(templatefile("${path.module}/cloud-init.sh", {
+      mount_target_ip = oci_file_storage_mount_target.YaraMT02.ip_address
+      export_path     = oci_file_storage_export.YaraExport02.path
+    }))
   }
 
 }
@@ -228,3 +233,11 @@ resource "oci_file_storage_export" "YaraExport02" {
   file_system_id = oci_file_storage_file_system.YaraFS02.id
   path           = "/YaraFS02"
 }
+
+/*resource "oci_bastion_bastion" "YaraBastion02" {
+  bastion_type                 = "STANDARD"
+  compartment_id               = var.compartment_id
+  target_subnet_id             = oci_core_subnet.YaraSubnet_Pub02.id
+  client_cidr_block_allow_list = [var.bastion_allowed_cidr]
+  name                         = "YaraBastion02"
+}*/

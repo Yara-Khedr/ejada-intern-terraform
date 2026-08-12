@@ -6,3 +6,4 @@ instance_shape       = "VM.Standard.A1.Flex"
 instance_ocpus       = 1
 instance_memory_gbs  = 6
 ssh_public_key_path  = "C:/Users/yaraa/.ssh/lab2_key.pub"
+bastion_allowed_cidr = "0.0.0.0/0"
