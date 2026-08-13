@@ -10,7 +10,7 @@ resource "oci_core_subnet" "YaraSubnet_Pub02" {
 
   compartment_id             = var.compartment_id
   vcn_id                     = oci_core_vcn.YaraVCN02.id
-  cidr_block                 = "10.0.1.0/24"
+  cidr_block                 = var.public_subnet_cidr
   display_name               = "YaraSubnet_Pub02"
   prohibit_public_ip_on_vnic = false
   route_table_id             = oci_core_route_table.YaraRT_Pub02.id
@@ -21,7 +21,7 @@ resource "oci_core_subnet" "YaraSubnet_Priv02" {
 
   compartment_id             = var.compartment_id
   vcn_id                     = oci_core_vcn.YaraVCN02.id
-  cidr_block                 = "10.0.2.0/24"
+  cidr_block                 = var.private_subnet_cidr
   display_name               = "YaraSubnet_Priv02"
   prohibit_public_ip_on_vnic = true
   route_table_id             = oci_core_route_table.YaraRT_Priv02.id
@@ -240,8 +240,8 @@ resource "oci_core_instance" "YaraJumpVM02" {
   shape               = var.instance_shape
 
   shape_config {
-    ocpus         = 1
-    memory_in_gbs = 6
+    ocpus         = var.jump_vm_ocpus
+    memory_in_gbs = var.jump_vm_memory_gbs
   }
 
   source_details {
@@ -275,7 +275,7 @@ resource "oci_file_storage_mount_target" "YaraMT02" {
 resource "oci_file_storage_export" "YaraExport02" {
   export_set_id  = oci_file_storage_mount_target.YaraMT02.export_set_id
   file_system_id = oci_file_storage_file_system.YaraFS02.id
-  path           = "/YaraFS02"
+  path           = var.fss_export_path
 }
 
 /*resource "oci_bastion_bastion" "YaraBastion02" {
@@ -289,13 +289,13 @@ resource "oci_file_storage_export" "YaraExport02" {
 resource "oci_load_balancer_load_balancer" "YaraLB02" {
   compartment_id = var.compartment_id
   display_name   = "YaraLB02"
-  shape          = "flexible"
+  shape          = var.lb_shape
   subnet_ids     = [oci_core_subnet.YaraSubnet_Pub02.id]
   is_private     = false
 
   shape_details {
-    minimum_bandwidth_in_mbps = 10
-    maximum_bandwidth_in_mbps = 100
+    minimum_bandwidth_in_mbps = var.lb_min_bandwidth_mbps
+    maximum_bandwidth_in_mbps = var.lb_max_bandwidth_mbps
   }
 }
 
@@ -306,7 +306,7 @@ resource "oci_load_balancer_backend_set" "YaraBES02" {
 
   health_checker {
     protocol = "HTTP"
-    port     = 80
+    port     = var.app_port
     url_path = "/"
   }
 }
@@ -315,13 +315,13 @@ resource "oci_load_balancer_backend" "YaraBackend02" {
   backendset_name  = oci_load_balancer_backend_set.YaraBES02.name
   load_balancer_id = oci_load_balancer_load_balancer.YaraLB02.id
   ip_address       = oci_core_instance.YaraVM02.private_ip
-  port             = 80
+  port             = var.app_port
 }
 
 resource "oci_load_balancer_listener" "YaraListener02" {
   load_balancer_id         = oci_load_balancer_load_balancer.YaraLB02.id
   name                     = "YaraListener02"
   default_backend_set_name = oci_load_balancer_backend_set.YaraBES02.name
-  port                     = 80
+  port                     = var.app_port
   protocol                 = "HTTP"
 }

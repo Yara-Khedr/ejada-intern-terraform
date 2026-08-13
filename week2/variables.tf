@@ -42,3 +42,48 @@ variable "bastion_allowed_cidr" {
   type        = string
   description = "CIDR range allowed to initiate Bastion sessions"
 }
+
+variable "public_subnet_cidr" {
+  type        = string
+  description = "CIDR block for the public subnet"
+}
+
+variable "private_subnet_cidr" {
+  type        = string
+  description = "CIDR block for the private subnet"
+}
+
+variable "fss_export_path" {
+  type        = string
+  description = "NFS export path for the File Storage Service"
+}
+
+variable "lb_shape" {
+  type        = string
+  description = "Load Balancer shape (e.g. flexible)"
+}
+
+variable "lb_min_bandwidth_mbps" {
+  type        = number
+  description = "Minimum bandwidth in Mbps for the flexible Load Balancer"
+}
+
+variable "lb_max_bandwidth_mbps" {
+  type        = number
+  description = "Maximum bandwidth in Mbps for the flexible Load Balancer"
+}
+
+variable "jump_vm_ocpus" {
+  type        = number
+  description = "Number of OCPUs allocated to the Jump VM"
+}
+
+variable "jump_vm_memory_gbs" {
+  type        = number
+  description = "Amount of memory in GB allocated to the Jump VM"
+}
+
+variable "app_port" {
+  type        = number
+  description = "Port the application listens on (used by LB backend, health check, and listener)"
+}
