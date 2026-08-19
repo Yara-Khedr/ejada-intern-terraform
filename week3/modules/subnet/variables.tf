@@ -53,11 +53,12 @@ variable "enable_flow_logs" {
 }
 
 variable "route_rules" {
-  description = "List of route rules (destination and network_entity_id ) used to dynamically generate Route Table rules"
-  type        = list(object({
-                destination   = string
-                network_entity_id     = string
-                }))
+  description = "List of route rules (destination, destination_type, and network_entity_id) used to dynamically generate Route Table rules"
+  type = list(object({
+    destination       = string
+    destination_type  = string
+    network_entity_id = string
+  }))
 }
 
 variable "log_group_id" {

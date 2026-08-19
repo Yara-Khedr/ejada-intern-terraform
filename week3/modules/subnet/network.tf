@@ -9,7 +9,7 @@ resource "oci_core_route_table" "subnet_route_table" {
         content {
             network_entity_id = route_rules.value.network_entity_id 
             destination = route_rules.value.destination
-            destination_type = "CIDR_BLOCK"
+            destination_type = route_rules.value.destination_type
         }
     }
 }
@@ -23,15 +23,47 @@ resource "oci_core_security_list" "subnet_security_list" {
         for_each = var.ingress_rules
         content {
             protocol = ingress_security_rules.value.protocol
-            source = ingress_security_rules.value.source
+            source   = ingress_security_rules.value.source
+
+            dynamic "tcp_options" {
+                for_each = ingress_security_rules.value.protocol == "6" ? [1] : []
+                content {
+                    min = ingress_security_rules.value.port
+                    max = ingress_security_rules.value.port
+                }
+            }
+
+            dynamic "udp_options" {
+                for_each = ingress_security_rules.value.protocol == "17" ? [1] : []
+                content {
+                    min = ingress_security_rules.value.port
+                    max = ingress_security_rules.value.port
+                }
+            }
         }
     }
 
     dynamic "egress_security_rules" {
         for_each = var.egress_rules
         content {
-            protocol = egress_security_rules.value.protocol
+            protocol    = egress_security_rules.value.protocol
             destination = egress_security_rules.value.destination
+
+            dynamic "tcp_options" {
+                for_each = egress_security_rules.value.protocol == "6" ? [1] : []
+                content {
+                    min = egress_security_rules.value.port
+                    max = egress_security_rules.value.port
+                }
+            }
+
+            dynamic "udp_options" {
+                for_each = egress_security_rules.value.protocol == "17" ? [1] : []
+                content {
+                    min = egress_security_rules.value.port
+                    max = egress_security_rules.value.port
+                }
+            }
         }
     }
 }
@@ -63,3 +95,4 @@ resource "oci_logging_log" "subnet_flow_log" {
         }
     }
 }
+
