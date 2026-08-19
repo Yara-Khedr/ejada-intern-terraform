@@ -15,6 +15,21 @@ ingress_rules = [
     protocol = "6"
     source   = "0.0.0.0/0"
     port     = 80
+  },
+  {
+    protocol = "6"
+    source   = "10.0.2.0/24"
+    port     = 6443
+  },
+  {
+    protocol = "6"
+    source   = "10.0.2.0/24"
+    port     = 12250
+  },
+  {
+    protocol = "1"
+    source   = "10.0.2.0/24"
+    port     = 0
   }
 ]
 
@@ -33,7 +48,7 @@ services_cidr        = "10.96.0.0/16"
 node_pool_name       = "Yara-W3-NodePool01"
 node_shape           = "VM.Standard.A1.Flex"
 node_count           = 2
-node_image_id        = "ocid1.image.oc1.me-jeddah-1.aaaaaaaakatlkbv4tobcwzrs42cax6hwf257vrugti2pimcshvq5lrkwydeq"
+node_image_id        = "ocid1.image.oc1.me-jeddah-1.aaaaaaaagbq3nytwrgns4a4dgzpmf4uvlazgz6xgb4co7o5bdsbf53qrr3aa"
 availability_domains = ["oXVt:ME-JEDDAH-1-AD-1"]
 node_ocpus           = 1
 node_memory_in_gbs   = 8
@@ -47,6 +62,11 @@ private_ingress_rules = [
   {
     protocol = "all"
     source   = "10.0.0.0/16"
+    port     = 0
+  },
+  {
+    protocol = "1"
+    source   = "0.0.0.0/0"
     port     = 0
   }
 ]

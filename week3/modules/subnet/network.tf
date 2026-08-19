@@ -40,6 +40,14 @@ resource "oci_core_security_list" "subnet_security_list" {
                     max = ingress_security_rules.value.port
                 }
             }
+
+            dynamic "icmp_options" {
+                for_each = ingress_security_rules.value.protocol == "1" ? [1] : []
+                content {
+                    type = 3
+                    code = 4
+                }
+            }
         }
     }
 
@@ -64,6 +72,7 @@ resource "oci_core_security_list" "subnet_security_list" {
                     max = egress_security_rules.value.port
                 }
             }
+            
         }
     }
 }
