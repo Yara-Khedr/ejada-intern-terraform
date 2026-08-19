@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yara-oke-app
+  namespace: yara-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yara-oke-app
+  template:
+    metadata:
+      labels:
+        app: yara-oke-app
+    spec:
+      imagePullSecrets:
+        - name: ocir-secret
+      volumes:
+        - name: yara-oke-storage
+          persistentVolumeClaim:
+            claimName: yara-oke-pvc
+      containers:
+        - name: yara-oke-app
+          image: jed.ocir.io/axkjllkftxfz/yara-oke-app:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: yara-oke-storage
+              mountPath: /usr/share/nginx/html/data

@@ -30,6 +30,10 @@ ingress_rules = [
     protocol = "1"
     source   = "10.0.2.0/24"
     port     = 0
+  },
+  { protocol = "6"
+    source   = "154.180.221.35/32"
+    port     = 6443
   }
 ]
 
